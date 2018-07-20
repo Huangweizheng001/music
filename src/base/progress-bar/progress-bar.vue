@@ -42,6 +42,7 @@
         const deltaX = e.touches[0].pageX - this.touch.startX
         const offsetWidth = Math.min(Math.max(0, this.touch.left + deltaX), this.$refs.progressBar.clientWidth - progressBtnWidth)
         this._offset(offsetWidth)
+        this.$emit('percentChanging', this._getPercent())
       },
       processTouchEnd() {
         this.touch.initiated = false
@@ -55,25 +56,35 @@
         // this._offset(e.offsetX)
         this._triggerPercent()
       },
+      setProgressOffset(percent) {
+        if (percent >= 0 && !this.touch.initiated) {
+          const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
+          const offsetWidth = percent * barWidth
+          this._offset(offsetWidth)
+        }
+      },
+      _triggerPercent() {
+        this.$emit('percentChange', this._getPercent())
+      },
       _offset(offsetWidth) {
         this.$refs.progress.style.width = `${offsetWidth}px`
         this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px,0,0)`
       },
-      _triggerPercent() {
+      _getPercent() {
         const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
-        const percent = this.$refs.progress.clientWidth / barWidth
-        this.$emit('percentChange', percent)
+        return this.$refs.progress.clientWidth / barWidth
       }
     },
     watch: {
       percent(newPercent) {
-        if (newPercent >= 0 && !this.touch.initiated) {
-          const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
-          const offsetWidth = newPercent * barWidth
-          this._offset(offsetWidth)
-          // this.$refs.progress.style.width = `${offsetWidth}px`
-          // this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px,0,0)`
-        }
+        this.setProgressOffset(newPercent)
+        // if (newPercent >= 0 && !this.touch.initiated) {
+        //   const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
+        //   const offsetWidth = newPercent * barWidth
+        //   this._offset(offsetWidth)
+        //   // this.$refs.progress.style.width = `${offsetWidth}px`
+        //   // this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+        // }
       }
     }
   }
